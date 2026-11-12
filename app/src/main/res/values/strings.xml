@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">FocusGate</string>
+    <string name="accessibility_service_name">FocusGate App Blocker</string>
+    <string name="accessibility_service_description">FocusGate monitors foreground applications to detect and block distracting apps according to your screen-time preferences.</string>
+</resources>

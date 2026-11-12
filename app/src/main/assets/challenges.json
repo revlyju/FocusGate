@@ -1,0 +1,329 @@
+[
+  {
+    "id": "q_01",
+    "difficulty": 1,
+    "type": "OUTPUT_PREDICTION",
+    "topic": "Python Bitwise & List Comprehension",
+    "prompt": "What does this Python snippet print?",
+    "codeLines": [
+      "nums = [2, 4, 6, 8]",
+      "res = [x >> 1 for x in nums if x & 4]",
+      "print(sum(res))"
+    ],
+    "options": ["5", "10", "3", "7"],
+    "correctAnswer": "5",
+    "explanation": "x & 4 filters numbers with the 4-bit set: [4, 6]. Right shifting by 1 divides by 2: [2, 3]. Sum is 5."
+  },
+  {
+    "id": "q_02",
+    "difficulty": 1,
+    "type": "OUTPUT_PREDICTION",
+    "topic": "Python Mutable Default Arguments",
+    "prompt": "What is the final output printed by this code?",
+    "codeLines": [
+      "def add_item(val, box=[]):",
+      "    box.append(val)",
+      "    return len(box)",
+      "",
+      "add_item(10)",
+      "print(add_item(20))"
+    ],
+    "options": ["1", "2", "0", "TypeError"],
+    "correctAnswer": "2",
+    "explanation": "Default list arguments in Python are evaluated once at function definition, persisting across calls."
+  },
+  {
+    "id": "q_03",
+    "difficulty": 1,
+    "type": "OUTPUT_PREDICTION",
+    "topic": "XOR Properties",
+    "prompt": "What does this Kotlin snippet output?",
+    "codeLines": [
+      "val arr = listOf(7, 3, 5, 3, 7)",
+      "val ans = arr.reduce { acc, i -> acc xor i }",
+      "println(ans)"
+    ],
+    "options": ["0", "5", "7", "25"],
+    "correctAnswer": "5",
+    "explanation": "XORing identical numbers cancels them out (a ^ a = 0), leaving the single unique element: 5."
+  },
+  {
+    "id": "q_04",
+    "difficulty": 1,
+    "type": "OUTPUT_PREDICTION",
+    "topic": "Python String Slicing",
+    "prompt": "What is printed to the console?",
+    "codeLines": [
+      "s = 'FOCUSGATE'",
+      "print(s[1:7:2][::-1])"
+    ],
+    "options": ["SUO", "OUS", "CGA", "AGC"],
+    "correctAnswer": "SUO",
+    "explanation": "s[1:7:2] takes indices 1, 3, 5 -> 'OUS'. Reversing with [::-1] gives 'SUO'."
+  },
+  {
+    "id": "q_05",
+    "difficulty": 1,
+    "type": "OUTPUT_PREDICTION",
+    "topic": "Integer Division & Modulo",
+    "prompt": "What does this loop print?",
+    "codeLines": [
+      "var n = 259",
+      "var total = 0",
+      "while (n > 0) {",
+      "    total += n % 10",
+      "    n /= 100",
+      "}",
+      "println(total)"
+    ],
+    "options": ["16", "11", "7", "14"],
+    "correctAnswer": "11",
+    "explanation": "Iteration 1: total += 9, n becomes 2. Iteration 2: total += 2, n becomes 0. Result: 11."
+  },
+  {
+    "id": "q_06",
+    "difficulty": 2,
+    "type": "FIND_ERROR",
+    "topic": "Binary Search Boundary",
+    "prompt": "Tap the 0-based line index that causes a bug when target is at a single remaining element:",
+    "codeLines": [
+      "fun binarySearch(arr: IntArray, target: Int): Int {",
+      "    var left = 0",
+      "    var right = arr.size - 1",
+      "    while (left < right) {",
+      "        val mid = left + (right - left) / 2",
+      "        if (arr[mid] == target) return mid",
+      "        else if (arr[mid] < target) left = mid + 1",
+      "        else right = mid - 1",
+      "    }",
+      "    return -1",
+      "}"
+    ],
+    "options": [],
+    "correctAnswer": "3",
+    "explanation": "Line index 3 ('while (left < right)') exits prematurely when left == right without checking arr[left]."
+  },
+  {
+    "id": "q_07",
+    "difficulty": 2,
+    "type": "FIND_ERROR",
+    "topic": "Two-Pointer Palindrome Check",
+    "prompt": "Tap the 0-based line index that causes an infinite loop:",
+    "codeLines": [
+      "fun isPalindrome(s: String): Boolean {",
+      "    var i = 0",
+      "    var j = s.length - 1",
+      "    while (i < j) {",
+      "        if (s[i] != s[j]) return false",
+      "        i++",
+      "        j++",
+      "    }",
+      "    return true",
+      "}"
+    ],
+    "options": [],
+    "correctAnswer": "6",
+    "explanation": "Line index 6 increments 'j++' instead of decrementing 'j--', causing an out-of-bounds crash or infinite loop."
+  },
+  {
+    "id": "q_08",
+    "difficulty": 2,
+    "type": "FIND_ERROR",
+    "topic": "Fast & Slow Pointer Cycle Detection",
+    "prompt": "Tap the 0-based line index that prevents detecting a cycle in a linked list:",
+    "codeLines": [
+      "fun hasCycle(head: ListNode?): Boolean {",
+      "    var slow = head",
+      "    var fast = head",
+      "    while (fast != null && fast.next != null) {",
+      "        slow = slow?.next",
+      "        fast = fast.next",
+      "        if (slow == fast) return true",
+      "    }",
+      "    return false",
+      "}"
+    ],
+    "options": [],
+    "correctAnswer": "5",
+    "explanation": "Line index 5 advances 'fast' by only 1 step instead of 2 ('fast = fast.next?.next')."
+  },
+  {
+    "id": "q_09",
+    "difficulty": 2,
+    "type": "FIND_ERROR",
+    "topic": "Kadane's Maximum Subarray",
+    "prompt": "Tap the 0-based line index that breaks Kadane's algorithm when all numbers are negative:",
+    "codeLines": [
+      "fun maxSubArray(nums: IntArray): Int {",
+      "    var maxSoFar = 0",
+      "    var currMax = 0",
+      "    for (num in nums) {",
+      "        currMax = maxOf(num, currMax + num)",
+      "        maxSoFar = maxOf(maxSoFar, currMax)",
+      "    }",
+      "    return maxSoFar",
+      "}"
+    ],
+    "options": [],
+    "correctAnswer": "1",
+    "explanation": "Line index 1 initializes 'maxSoFar = 0' instead of 'nums[0]', wrongly returning 0 for all-negative arrays."
+  },
+  {
+    "id": "q_10",
+    "difficulty": 2,
+    "type": "FIND_ERROR",
+    "topic": "BFS Shortest Path Visited Set",
+    "prompt": "Tap the 0-based line index that causes duplicate nodes to flood the BFS queue:",
+    "codeLines": [
+      "fun bfs(start: Int, adj: Map<Int, List<Int>>) {",
+      "    val q = ArrayDeque<Int>()",
+      "    val visited = mutableSetOf<Int>()",
+      "    q.add(start)",
+      "    while (q.isNotEmpty()) {",
+      "        val node = q.removeFirst()",
+      "        for (nei in adj[node] ?: emptyList()) {",
+      "            if (nei !in visited) q.add(nei)",
+      "        }",
+      "    }",
+      "}"
+    ],
+    "options": [],
+    "correctAnswer": "7",
+    "explanation": "Line index 7 enqueues neighbors without immediately adding them to 'visited', causing exponential re-queueing."
+  },
+  {
+    "id": "q_11",
+    "difficulty": 3,
+    "type": "COMPLEXITY",
+    "topic": "Heap Operations",
+    "prompt": "What is the time complexity of finding the K-th largest element in a stream of N items using a Min-Heap of size K?",
+    "codeLines": [],
+    "options": ["O(N log K)", "O(N log N)", "O(K log N)", "O(N + K)"],
+    "correctAnswer": "O(N log K)",
+    "explanation": "We process N elements, and each heap push/pop on a heap bounded to size K takes O(log K) time."
+  },
+  {
+    "id": "q_12",
+    "difficulty": 3,
+    "type": "COMPLEXITY",
+    "topic": "Recursive Tree Height",
+    "prompt": "What is the worst-case auxiliary space complexity of standard recursive DFS on a skewed binary tree of N nodes?",
+    "codeLines": [],
+    "options": ["O(N)", "O(log N)", "O(1)", "O(N log N)"],
+    "correctAnswer": "O(N)",
+    "explanation": "A skewed binary tree degenerates into a linked list of height N, requiring N stack frames."
+  },
+  {
+    "id": "q_13",
+    "difficulty": 3,
+    "type": "COMPLEXITY",
+    "topic": "Amortized Analysis",
+    "prompt": "What is the amortized time complexity of pushing N elements onto a dynamic array (ArrayList) that doubles capacity on resize?",
+    "codeLines": [],
+    "options": ["O(1) per push", "O(log N) per push", "O(N) per push", "O(N log N) per push"],
+    "correctAnswer": "O(1) per push",
+    "explanation": "Total copy operations form a geometric series (1 + 2 + 4 + ... + N < 2N), averaging O(1) per insertion."
+  },
+  {
+    "id": "q_14",
+    "difficulty": 3,
+    "type": "COMPLEXITY",
+    "topic": "Graph Algorithms",
+    "prompt": "Which data structure optimizes Dijkstra's shortest path algorithm to O((V + E) log V) on sparse graphs?",
+    "codeLines": [],
+    "options": ["Binary Min-Heap", "Monotonic Stack", "Disjoint Set Union", "Adjacency Matrix"],
+    "correctAnswer": "Binary Min-Heap",
+    "explanation": "A PriorityQueue (Min-Heap) extracts the minimum-distance unvisited vertex in O(log V) time."
+  },
+  {
+    "id": "q_15",
+    "difficulty": 3,
+    "type": "COMPLEXITY",
+    "topic": "Divide & Conquer Recurrence",
+    "prompt": "Using the Master Theorem, what is the time complexity of T(n) = 2T(n/2) + O(n)?",
+    "codeLines": [],
+    "options": ["O(n log n)", "O(n)", "O(n^2)", "O(log n)"],
+    "correctAnswer": "O(n log n)",
+    "explanation": "a = 2, b = 2 -> n^(log_b(a)) = n^1, which matches f(n) = O(n) (Case 2 of Master Theorem)."
+  },
+  {
+    "id": "q_16",
+    "difficulty": 4,
+    "type": "PARSONS_ORDER",
+    "topic": "Linked List Reversal",
+    "prompt": "Tap the lines in the exact order to reverse a singly linked list inside a while (curr != null) loop:",
+    "codeLines": [
+      "prev = curr",
+      "curr = nextTemp",
+      "val nextTemp = curr.next",
+      "curr.next = prev"
+    ],
+    "options": [],
+    "correctAnswer": "2,3,0,1",
+    "explanation": "Save nextTemp (2), point curr.next backwards to prev (3), shift prev forward (0), shift curr forward (1)."
+  },
+  {
+    "id": "q_17",
+    "difficulty": 4,
+    "type": "PARSONS_ORDER",
+    "topic": "Valid Parentheses with Stack",
+    "prompt": "Tap the lines in the correct logical order to validate closing brackets:",
+    "codeLines": [
+      "if (stack.isEmpty() || stack.pop() != matchingOpen) return false",
+      "for (ch in s) {",
+      "    if (ch in \"([{\") stack.push(ch)",
+      "    else {"
+    ],
+    "options": [],
+    "correctAnswer": "1,2,3,0",
+    "explanation": "Iterate string (1), push opening brackets (2), handle closing brackets (3), verify matching top of stack (0)."
+  },
+  {
+    "id": "q_18",
+    "difficulty": 4,
+    "type": "PARSONS_ORDER",
+    "topic": "Binary Tree Level-Order (BFS)",
+    "prompt": "Tap the lines in exact order to process one level of a Binary Tree:",
+    "codeLines": [
+      "val node = queue.removeFirst()",
+      "val levelSize = queue.size",
+      "for (i in 0 until levelSize) {",
+      "    node.left?.let { queue.add(it) }"
+    ],
+    "options": [],
+    "correctAnswer": "1,2,0,3",
+    "explanation": "Capture current levelSize first (1), loop levelSize times (2), dequeue node (0), enqueue children (3)."
+  },
+  {
+    "id": "q_19",
+    "difficulty": 4,
+    "type": "PARSONS_ORDER",
+    "topic": "Dijkstra Edge Relaxation",
+    "prompt": "Tap the lines in exact order to relax an edge (u -> v) with weight w:",
+    "codeLines": [
+      "pq.add(Pair(dist[v], v))",
+      "if (dist[u] + w < dist[v]) {",
+      "    dist[v] = dist[u] + w",
+      "}"
+    ],
+    "options": [],
+    "correctAnswer": "1,2,0,3",
+    "explanation": "Check if new path is shorter (1), update dist[v] (2), push updated distance to PriorityQueue (0), close block (3)."
+  },
+  {
+    "id": "q_20",
+    "difficulty": 4,
+    "type": "PARSONS_ORDER",
+    "topic": "0/1 Knapsack DP Transition",
+    "prompt": "Tap the lines in exact order to compute dp[i][w] for item weight wt and value v:",
+    "codeLines": [
+      "dp[i][w] = dp[i - 1][w]",
+      "if (wt <= w) {",
+      "    dp[i][w] = maxOf(dp[i - 1][w], v + dp[i - 1][w - wt])",
+      "} else {"
+    ],
+    "options": [],
+    "correctAnswer": "1,2,3,0",
+    "explanation": "Check if item fits capacity w (1), take max of include vs exclude (2), else branch (3), carry previous state (0)."
+  }
+]
