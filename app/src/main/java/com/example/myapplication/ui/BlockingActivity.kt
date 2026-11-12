@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 /**
  * Fullscreen Blocking Activity presented whenever a restricted app is launched
  * and no active temporary unlock pass exists.
+ * Supports three unlock gates: Code Challenge, Convince AI, and GitHub Commit Bank.
  */
 class BlockingActivity : ComponentActivity() {
 
@@ -64,11 +65,8 @@ class BlockingActivity : ComponentActivity() {
                     isChallengeLoading = isChallengeLoading,
                     groqApiKey = groqApiKey,
                     aiCooldownRemainingMs = cooldownRemainingMs,
-                    onReturnHome = {
-                        returnToHome()
-                    },
+                    onReturnHome = { returnToHome() },
                     onRequestChallenge = {
-                        // Lazily load a challenge when user taps "Solve to Unlock"
                         scope.launch {
                             isChallengeLoading = true
                             currentChallenge = challengeRepo.getNextChallenge()
@@ -76,14 +74,11 @@ class BlockingActivity : ComponentActivity() {
                         }
                     },
                     onChallengeCorrect = {
-                        // Grant a 5-min temporary pass and close the overlay
                         scope.launch {
                             challengeRepo.recordSuccessfulUnlock(targetPackage)
-                            finish()
                         }
                     },
                     onChallengeWrong = {
-                        // Load a fresh challenge of the same difficulty
                         scope.launch {
                             isChallengeLoading = true
                             currentChallenge = challengeRepo.getNextChallenge()
@@ -94,17 +89,33 @@ class BlockingActivity : ComponentActivity() {
                         scope.launch {
                             aiRepo.recordApprovedExcuse(appLabel, excuseSummary)
                             aiRepo.grantTemporaryUnlock(targetPackage, grantedMinutes)
-                            finish()
                         }
                     },
                     onAiNegotiationDeniedOrExhausted = {
                         scope.launch {
                             aiRepo.triggerCooldown(targetPackage)
                         }
+                    },
+                    onGitHubUnlockGranted = {
+                        // Unlock already written to DataStore by GitHubGateRepository.spendBankedMinutes
+                    },
+                    onContinueToApp = {
+                        launchTargetAppAndFinish(targetPackage)
                     }
                 )
             }
         }
+    }
+
+    private fun launchTargetAppAndFinish(packageName: String) {
+        try {
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+            if (launchIntent != null) {
+                startActivity(launchIntent)
+            }
+        } catch (_: Exception) {
+        }
+        finish()
     }
 
     override fun onNewIntent(intent: Intent) {

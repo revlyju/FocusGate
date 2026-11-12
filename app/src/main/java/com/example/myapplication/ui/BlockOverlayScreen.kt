@@ -4,9 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -15,17 +13,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -37,45 +25,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.HourglassTop
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.WifiOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -85,43 +40,36 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.AiGatekeeperRepository
-import com.example.myapplication.data.AppInfo
-import com.example.myapplication.data.Challenge
-import com.example.myapplication.data.ChallengeType
-import com.example.myapplication.data.ChatMessage
-import com.example.myapplication.data.GroqApiResult
-import com.example.myapplication.data.GroqApiService
+import com.example.myapplication.data.*
+import com.example.myapplication.ui.components.CatMood
+import com.example.myapplication.ui.components.FocusCatMascot
+import com.example.myapplication.ui.theme.*
 import com.example.myapplication.ui.util.NetworkUtils
 import com.example.myapplication.ui.util.rememberAppIcon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-// ═══════════════════════════════════════════════════════════════════════════════
-//  Design constants
-// ═══════════════════════════════════════════════════════════════════════════════
-
-private val BgDark = Color(0xFF0F172A)
-private val BgMid = Color(0xFF1E293B)
-private val AccentBlue = Color(0xFF2563EB)
-private val AccentTeal = Color(0xFF10B981)
-private val AccentPurple = Color(0xFF8B5CF6)
-private val SlateText = Color(0xFF94A3B8)
-private val RedAlert = Color(0xFFEF4444)
-private val CodeBg = Color(0xFF1A2332)
-private val CorrectGreen = Color(0xFF22C55E)
-private val WrongRed = Color(0xFFEF4444)
+// ══════════════════════════════════════════════════════════════════════════════
+//  Local palette shorthands
+// ══════════════════════════════════════════════════════════════════════════════
+private val Bg       = ObsidianBackground
+private val Surf     = CharcoalSurface
+private val SurfVar  = CharcoalSurfaceVar
+private val Amber    = AmberPrimary
+private val AmberD   = AmberDeep
+private val Peach    = PeachSand
+private val White    = WarmWhite
+private val Muted    = MutedTaupe
+private val Crimson  = CrimsonAlert
+private val CodeBg   = Color(0xFF1A1612)
 
 private enum class OverlayMode {
-    DEFAULT,
-    CODE_CHALLENGE,
-    AI_NEGOTIATION
+    DEFAULT, CODE_CHALLENGE, AI_NEGOTIATION, GITHUB_BANK, ACCESS_GRANTED
 }
 
-/**
- * Full-screen blocking overlay supporting both the DSA Coding Challenge gate
- * and the Bring-Your-Own-Key (BYOK) Groq "Convince the AI" negotiation gate.
- */
+// ══════════════════════════════════════════════════════════════════════════════
+//  BlockOverlayScreen — entry-point
+// ══════════════════════════════════════════════════════════════════════════════
 @Composable
 fun BlockOverlayScreen(
     appInfo: AppInfo?,
@@ -136,94 +84,98 @@ fun BlockOverlayScreen(
     onChallengeWrong: () -> Unit,
     onAiNegotiationApproved: (grantedMinutes: Int, excuseSummary: String, appLabel: String) -> Unit,
     onAiNegotiationDeniedOrExhausted: () -> Unit,
+    onGitHubUnlockGranted: () -> Unit = {},
+    onContinueToApp: () -> Unit = onReturnHome,
 ) {
     BackHandler { onReturnHome() }
 
     val isOnline by NetworkUtils.rememberIsOnline()
     var currentMode by remember { mutableStateOf(OverlayMode.DEFAULT) }
+    var grantedMinutesForCelebration by remember { mutableIntStateOf(10) }
 
-    // When a challenge is loaded while in DEFAULT, switch to CODE_CHALLENGE
     LaunchedEffect(currentChallenge) {
         if (currentChallenge != null && currentMode == OverlayMode.DEFAULT) {
             currentMode = OverlayMode.CODE_CHALLENGE
         }
     }
 
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(BgDark, BgMid, BgDark),
-    )
-
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGradient),
-        contentAlignment = Alignment.TopCenter,
+        modifier = Modifier.fillMaxSize().background(Bg),
+        contentAlignment = Alignment.TopCenter
     ) {
         AnimatedContent(
             targetState = currentMode,
             transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(200)) },
-            label = "ScreenSwitch",
+            label = "ScreenSwitch"
         ) { mode ->
             when (mode) {
-                OverlayMode.DEFAULT -> {
-                    BlockingPane(
-                        appInfo = appInfo,
-                        blockedPackage = blockedPackage,
-                        isChallengeLoading = isChallengeLoading,
-                        isOnline = isOnline,
-                        groqApiKey = groqApiKey,
-                        aiCooldownRemainingMs = aiCooldownRemainingMs,
+                OverlayMode.DEFAULT -> BlockingPane(
+                    appInfo = appInfo,
+                    blockedPackage = blockedPackage,
+                    isChallengeLoading = isChallengeLoading,
+                    isOnline = isOnline,
+                    groqApiKey = groqApiKey,
+                    aiCooldownRemainingMs = aiCooldownRemainingMs,
+                    onReturnHome = onReturnHome,
+                    onRequestChallenge = onRequestChallenge,
+                    onOpenAiNegotiation = { currentMode = OverlayMode.AI_NEGOTIATION },
+                    onOpenGitHubBank = { currentMode = OverlayMode.GITHUB_BANK }
+                )
+                OverlayMode.CODE_CHALLENGE -> if (currentChallenge != null) {
+                    ChallengePane(
+                        challenge = currentChallenge,
                         onReturnHome = onReturnHome,
-                        onRequestChallenge = onRequestChallenge,
-                        onOpenAiNegotiation = { currentMode = OverlayMode.AI_NEGOTIATION },
+                        onCorrect = {
+                            grantedMinutesForCelebration = 5
+                            currentMode = OverlayMode.ACCESS_GRANTED
+                            onChallengeCorrect()
+                        },
+                        onWrong = onChallengeWrong,
+                        onSwitchToAi = { currentMode = OverlayMode.AI_NEGOTIATION },
+                        canSwitchToAi = isOnline && groqApiKey.isNotBlank() && aiCooldownRemainingMs <= 0L
                     )
-                }
-
-                OverlayMode.CODE_CHALLENGE -> {
-                    if (currentChallenge != null) {
-                        ChallengePane(
-                            challenge = currentChallenge,
-                            onReturnHome = onReturnHome,
-                            onCorrect = onChallengeCorrect,
-                            onWrong = onChallengeWrong,
-                            onSwitchToAi = {
-                                currentMode = OverlayMode.AI_NEGOTIATION
-                            },
-                            canSwitchToAi = isOnline && groqApiKey.isNotBlank() && aiCooldownRemainingMs <= 0L,
-                        )
-                    } else {
-                        // Fallback loader if challenge not yet arrived
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = AccentTeal)
-                        }
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Amber)
                     }
                 }
-
-                OverlayMode.AI_NEGOTIATION -> {
-                    AiNegotiationPane(
-                        appInfo = appInfo,
-                        blockedPackage = blockedPackage,
-                        groqApiKey = groqApiKey,
-                        isOnline = isOnline,
-                        aiCooldownRemainingMs = aiCooldownRemainingMs,
-                        onReturnHome = onReturnHome,
-                        onSwitchToCode = {
-                            currentMode = OverlayMode.CODE_CHALLENGE
-                            onRequestChallenge()
-                        },
-                        onApproved = onAiNegotiationApproved,
-                        onDeniedOrExhausted = onAiNegotiationDeniedOrExhausted,
-                    )
-                }
+                OverlayMode.AI_NEGOTIATION -> AiNegotiationPane(
+                    appInfo = appInfo,
+                    blockedPackage = blockedPackage,
+                    groqApiKey = groqApiKey,
+                    isOnline = isOnline,
+                    aiCooldownRemainingMs = aiCooldownRemainingMs,
+                    onReturnHome = onReturnHome,
+                    onSwitchToCode = { currentMode = OverlayMode.CODE_CHALLENGE; onRequestChallenge() },
+                    onApproved = { mins, summary, label ->
+                        grantedMinutesForCelebration = mins
+                        currentMode = OverlayMode.ACCESS_GRANTED
+                        onAiNegotiationApproved(mins, summary, label)
+                    },
+                    onDeniedOrExhausted = onAiNegotiationDeniedOrExhausted
+                )
+                OverlayMode.GITHUB_BANK -> GitHubBankPane(
+                    blockedPackage = blockedPackage,
+                    isOnline = isOnline,
+                    onReturnHome = onReturnHome,
+                    onUnlockGranted = { minutes ->
+                        grantedMinutesForCelebration = minutes
+                        currentMode = OverlayMode.ACCESS_GRANTED
+                        onGitHubUnlockGranted()
+                    }
+                )
+                OverlayMode.ACCESS_GRANTED -> AccessGrantedPane(
+                    grantedMinutes = grantedMinutesForCelebration,
+                    onContinue = onContinueToApp
+                )
             }
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-//  BlockingPane – the initial "stay focused" view with Mode Switcher
-// ═══════════════════════════════════════════════════════════════════════════════
-
+// ══════════════════════════════════════════════════════════════════════════════
+//  Step 1 — "Not so fast." Gate Landing
+// ══════════════════════════════════════════════════════════════════════════════
 @Composable
 private fun BlockingPane(
     appInfo: AppInfo?,
@@ -235,216 +187,182 @@ private fun BlockingPane(
     onReturnHome: () -> Unit,
     onRequestChallenge: () -> Unit,
     onOpenAiNegotiation: () -> Unit,
+    onOpenGitHubBank: () -> Unit,
 ) {
-    var remainingSeconds by remember { mutableIntStateOf(10) }
-
-    LaunchedEffect(Unit) {
-        while (remainingSeconds > 0) {
-            delay(1000L)
-            remainingSeconds -= 1
-        }
-    }
-
-    val progress by animateFloatAsState(
-        targetValue = remainingSeconds / 10f,
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
-        label = "LockoutProgress",
-    )
-
     val iconBitmap = rememberAppIcon(appInfo?.icon)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // ── Status badge ──────────────────────────────────────────────────────
-        Surface(
-            shape = CircleShape,
-            color = RedAlert.copy(alpha = 0.18f),
-            border = BorderStroke(1.dp, RedAlert.copy(alpha = 0.6f)),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+        // ── Suspicious Cat peeking ──────────────────────────────────────────
+        FocusCatMascot(
+            mood = CatMood.SUSPICIOUS,
+            modifier = Modifier.size(160.dp, 120.dp)
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        // ── App icon ────────────────────────────────────────────────────────
+        if (iconBitmap != null) {
+            Box(
+                modifier = Modifier.size(68.dp).clip(RoundedCornerShape(18.dp)).background(SurfVar),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Lock, null, tint = Color(0xFFFCA5A5), modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    "FOCUSGATE GUARD ACTIVE",
-                    color = Color(0xFFFCA5A5),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                )
+                Image(bitmap = iconBitmap, contentDescription = appInfo?.appName, modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)))
             }
+            Spacer(Modifier.height(10.dp))
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        // ── App icon ──────────────────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(22.dp))
-                .background(Color.White.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (iconBitmap != null) {
-                Image(bitmap = iconBitmap, contentDescription = appInfo?.appName ?: blockedPackage, modifier = Modifier.size(58.dp).clip(RoundedCornerShape(14.dp)))
-            } else {
-                Icon(Icons.Default.HourglassTop, null, tint = Color.White, modifier = Modifier.size(40.dp))
-            }
-        }
-
-        Spacer(Modifier.height(14.dp))
 
         Text(
-            "${appInfo?.appName ?: blockedPackage} is Blocked",
-            style = MaterialTheme.typography.headlineMedium,
+            "Not so fast.",
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.ExtraBold,
-            color = Color.White,
-            textAlign = TextAlign.Center,
+            color = White,
+            textAlign = TextAlign.Center
         )
-
         Spacer(Modifier.height(6.dp))
-
         Text(
-            "Take a breath. Remember your goals and what truly deserves your attention right now.",
+            "You were trying to open ${appInfo?.appName ?: blockedPackage} again, weren't you?",
             style = MaterialTheme.typography.bodyMedium,
-            color = SlateText,
+            color = Muted,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         Spacer(Modifier.height(24.dp))
 
-        // ── Countdown ring ────────────────────────────────────────────────────
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(105.dp)) {
-            CircularProgressIndicator(
-                progress = { 1f },
-                modifier = Modifier.fillMaxSize(),
-                color = Color.White.copy(alpha = 0.1f),
-                strokeWidth = 7.dp,
-            )
-            CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxSize(),
-                color = if (remainingSeconds > 0) Color(0xFF38BDF8) else AccentTeal,
-                strokeWidth = 7.dp,
-            )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    if (remainingSeconds > 0) remainingSeconds.toString() else "✓",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-                Text(
-                    if (remainingSeconds > 0) "seconds" else "ready",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = SlateText,
-                )
-            }
-        }
-
-        Spacer(Modifier.height(28.dp))
-
-        // ── Primary Go Back button ────────────────────────────────────────────
-        Button(
-            onClick = onReturnHome,
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue, contentColor = Color.White),
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+        // ── THE DEAL card ───────────────────────────────────────────────────
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(containerColor = Surf),
+            border = BorderStroke(1.dp, SubtleBorder)
         ) {
-            Icon(Icons.Default.Home, null, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Go Back / Stay Focused", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("THE DEAL", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Muted, letterSpacing = 2.sp)
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Timer, null, tint = Amber, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("10 MINUTES", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = Amber)
+                }
+                Text("Earn your access by completing one challenge.", style = MaterialTheme.typography.bodySmall, color = Muted, textAlign = TextAlign.Center)
+
+                Spacer(Modifier.height(18.dp))
+
+                // ── 3 selector tiles ────────────────────────────────────────
+                val isCooldownActive = aiCooldownRemainingMs > 0L
+                val isAiConfigured = groqApiKey.isNotBlank()
+                val canUseAi = isOnline && !isCooldownActive && isAiConfigured
+                val cooldownMins = (aiCooldownRemainingMs / (60 * 1000L)) + 1
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // AI Intent tile
+                    ChallengeTile(
+                        icon = Icons.Default.Psychology,
+                        label = "AI Intent",
+                        badge = when {
+                            !isOnline -> "Offline"
+                            isCooldownActive -> "${cooldownMins}m cooldown"
+                            !isAiConfigured -> "Key needed"
+                            else -> null
+                        },
+                        modifier = Modifier.weight(1f),
+                        onClick = onOpenAiNegotiation
+                    )
+                    // Algo Ransom tile
+                    ChallengeTile(
+                        icon = Icons.Default.Code,
+                        label = "Algo Ransom",
+                        badge = if (isChallengeLoading) "Loading…" else null,
+                        modifier = Modifier.weight(1f),
+                        onClick = onRequestChallenge
+                    )
+                    // Git Proof tile
+                    ChallengeTile(
+                        icon = Icons.Default.Commit,
+                        label = "Git Proof",
+                        badge = null,
+                        modifier = Modifier.weight(1f),
+                        onClick = onOpenGitHubBank
+                    )
+                }
+
+                Spacer(Modifier.height(18.dp))
+
+                // ── Primary CTA ─────────────────────────────────────────────
+                Button(
+                    onClick = onRequestChallenge,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Amber, contentColor = ObsidianBackground),
+                    enabled = !isChallengeLoading
+                ) {
+                    if (isChallengeLoading) {
+                        CircularProgressIndicator(color = ObsidianBackground, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Loading…", fontWeight = FontWeight.ExtraBold)
+                    } else {
+                        Text("Choose your challenge", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(16.dp))
 
-        // ── Dual Unlock Modes Section ─────────────────────────────────────────
-        Text(
-            "EARN AN EMERGENCY UNLOCK PASS",
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = SlateText,
-            letterSpacing = 1.sp,
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        // Button 1: Solve Code Challenge
-        OutlinedButton(
-            onClick = onRequestChallenge,
-            enabled = !isChallengeLoading,
-            shape = RoundedCornerShape(14.dp),
-            border = BorderStroke(1.dp, AccentTeal.copy(alpha = 0.7f)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentTeal),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-        ) {
-            if (isChallengeLoading) {
-                CircularProgressIndicator(
-                    color = AccentTeal,
-                    strokeWidth = 2.dp,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Loading challenge…", style = MaterialTheme.typography.bodyLarge)
-            } else {
-                Icon(Icons.Default.Code, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Solve Code Challenge (Offline)", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            }
-        }
-
-        Spacer(Modifier.height(10.dp))
-
-        // Button 2: Convince the AI (Connectivity & Cooldown aware)
-        val isCooldownActive = aiCooldownRemainingMs > 0L
-        val isAiConfigured = groqApiKey.isNotBlank()
-        val canUseAi = isOnline && !isCooldownActive && isAiConfigured
-
-        val cooldownMinsLeft = (aiCooldownRemainingMs / (60 * 1000L)) + 1
-
-        OutlinedButton(
-            onClick = onOpenAiNegotiation,
-            enabled = canUseAi,
-            shape = RoundedCornerShape(14.dp),
-            border = BorderStroke(
-                1.dp,
-                if (canUseAi) AccentPurple.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.15f)
-            ),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = if (canUseAi) AccentPurple else SlateText,
-                disabledContentColor = SlateText.copy(alpha = 0.6f)
-            ),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-        ) {
-            Icon(Icons.Default.Psychology, null, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = when {
-                    !isOnline -> "Offline — Use Code Challenge"
-                    isCooldownActive -> "AI Locked (${cooldownMinsLeft}m cooldown)"
-                    !isAiConfigured -> "Convince AI (Key Required in Settings)"
-                    else -> "Convince the AI (Groq Llama 3.3)"
-                },
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
+        // ── Give up link ────────────────────────────────────────────────────
+        TextButton(onClick = onReturnHome) {
+            Icon(Icons.Default.Home, null, tint = Muted, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("Give up and return home", color = Muted, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-//  AiNegotiationPane – 3-Turn Negotiation Chat with Groq Llama 3.3
-// ═══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun ChallengeTile(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    badge: String?,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        color = SurfVar,
+        border = BorderStroke(1.dp, SubtleBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(icon, null, tint = Amber, modifier = Modifier.size(24.dp))
+            Text(label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = White, textAlign = TextAlign.Center)
+            if (badge != null) {
+                Surface(shape = CircleShape, color = CrimsonAlertContainer) {
+                    Text(badge, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), style = MaterialTheme.typography.labelSmall, color = Crimson, fontSize = 9.sp)
+                }
+            }
+        }
+    }
+}
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  Step 2a — AI Intent Evaluator
+// ══════════════════════════════════════════════════════════════════════════════
 @Composable
 private fun AiNegotiationPane(
     appInfo: AppInfo?,
@@ -464,194 +382,117 @@ private fun AiNegotiationPane(
     val listState = rememberLazyListState()
 
     val targetAppName = appInfo?.appName ?: blockedPackage
-
-    // Conversation state: user has at most 3 messages
     val messages = remember { mutableStateListOf<ChatMessage>() }
-    var userMessageInput by remember { mutableStateOf("") }
+    var userInput by remember { mutableStateOf("") }
     var isSending by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var finalDecision by remember { mutableStateOf<String?>(null) } // "APPROVED" | "DENIED"
-    var approvedMinutes by remember { mutableIntStateOf(0) }
+    var finalDecision by remember { mutableStateOf<String?>(null) }
+    // Eye tracking — synced to text length
+    val eyeOffset = remember(userInput) {
+        if (userInput.isEmpty()) 0f else ((userInput.length % 20) / 10f) - 1f
+    }
 
     val userMessagesSent = messages.count { it.role == "user" }
     val messagesRemaining = (3 - userMessagesSent).coerceAtLeast(0)
-
     val isLockedByCooldown = aiCooldownRemainingMs > 0L || finalDecision == "DENIED"
 
-    // Auto-scroll on new message
     LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
-        }
+        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1)
     }
-
-    // Initial greeting from AI
     LaunchedEffect(Unit) {
         if (messages.isEmpty()) {
-            messages.add(
-                ChatMessage(
-                    role = "assistant",
-                    content = "Why do you need emergency access to $targetAppName right now? Be specific. You have 3 messages to convince me."
-                )
-            )
+            messages.add(ChatMessage(role = "assistant", content = "Why do you need emergency access to $targetAppName right now? Be specific. You have 3 messages to convince me."))
         }
     }
 
-    val sendMessageAction: () -> Unit = {
-        if (userMessageInput.isNotBlank() && !isSending && messagesRemaining > 0 && !isLockedByCooldown && isOnline) {
-            val userText = userMessageInput.trim()
-            userMessageInput = ""
+    val sendAction: () -> Unit = {
+        if (userInput.isNotBlank() && !isSending && messagesRemaining > 0 && !isLockedByCooldown && isOnline) {
+            val text = userInput.trim()
+            userInput = ""
             focusManager.clearFocus()
             errorMessage = null
-
-            messages.add(ChatMessage(role = "user", content = userText))
+            messages.add(ChatMessage(role = "user", content = text))
             isSending = true
-
             scope.launch {
-                val pastExcusesFormatted = repository.getFormattedPastExcuses()
-                val result = GroqApiService.negotiateUnlock(
-                    apiKey = groqApiKey,
-                    targetAppName = targetAppName,
-                    pastExcusesFormatted = pastExcusesFormatted,
-                    conversationHistory = messages.toList()
-                )
-
+                val pastExcuses = repository.getFormattedPastExcuses()
+                val result = GroqApiService.negotiateUnlock(groqApiKey, targetAppName, pastExcuses, messages.toList())
                 isSending = false
-
                 when (result) {
                     is GroqApiResult.Success -> {
-                        val response = result.data
-                        messages.add(ChatMessage(role = "assistant", content = response.reply))
-
+                        val r = result.data
+                        messages.add(ChatMessage(role = "assistant", content = r.reply))
                         val newUserCount = messages.count { it.role == "user" }
-
                         when {
-                            response.decision == "APPROVED" -> {
+                            r.decision == "APPROVED" -> {
                                 finalDecision = "APPROVED"
-                                approvedMinutes = response.grantedMinutes
-                                onApproved(
-                                    response.grantedMinutes,
-                                    response.excuseSummary.ifBlank { "Constructive emergency task" },
-                                    targetAppName
-                                )
+                                onApproved(r.grantedMinutes, r.excuseSummary.ifBlank { "Emergency task" }, targetAppName)
                             }
-                            response.decision == "DENIED" || newUserCount >= 3 -> {
+                            r.decision == "DENIED" || newUserCount >= 3 -> {
                                 finalDecision = "DENIED"
                                 onDeniedOrExhausted()
                             }
-                            else -> {
-                                // "CONTINUE" and messages < 3: waiting for user's next response
-                            }
                         }
                     }
-                    is GroqApiResult.Error -> {
-                        errorMessage = "Connection dropped — switch to offline Code Challenge."
-                    }
+                    is GroqApiResult.Error -> errorMessage = "Connection dropped — switch to offline Code Challenge."
                 }
             }
         }
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 24.dp)
+        modifier = Modifier.fillMaxSize().background(Bg).padding(horizontal = 16.dp, vertical = 24.dp)
     ) {
-        // ── Top Header ────────────────────────────────────────────────────────
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp)
-        ) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = AccentPurple.copy(alpha = 0.25f),
-                border = BorderStroke(1.dp, AccentPurple.copy(alpha = 0.6f))
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Icon(Icons.Default.Psychology, null, tint = AccentPurple, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        "AI GATEKEEPER · GROQ 70B",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
+        // ── Header ──────────────────────────────────────────────────────────
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp)) {
+            FocusCatMascot(mood = CatMood.EVALUATING, eyeLookOffsetX = eyeOffset, modifier = Modifier.size(80.dp, 70.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("AI Intent Evaluator", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = White)
+                Text("Groq Llama 3.3 70B", style = MaterialTheme.typography.labelSmall, color = Muted)
             }
-
-            Spacer(Modifier.weight(1f))
-
-            // Message Counter Badge
-            Surface(
-                shape = CircleShape,
-                color = if (messagesRemaining > 0 && !isLockedByCooldown) MaterialTheme.colorScheme.surfaceVariant else WrongRed.copy(alpha = 0.2f)
-            ) {
+            // Messages left pill
+            Surface(shape = CircleShape, color = if (messagesRemaining > 0 && !isLockedByCooldown) AmberContainer else CrimsonAlertContainer) {
                 Text(
-                    text = if (isLockedByCooldown) "Locked (30m)" else "Messages: $messagesRemaining / 3",
+                    if (isLockedByCooldown) "Locked (30m)" else "Messages: $messagesRemaining / 3",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (isLockedByCooldown) WrongRed else Color.White,
+                    color = if (isLockedByCooldown) Crimson else Amber,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }
-
             IconButton(onClick = onReturnHome) {
-                Icon(Icons.Default.Home, "Return home", tint = SlateText)
+                Icon(Icons.Default.Close, "Return home", tint = Muted)
             }
         }
 
-        // Error Banner (e.g. network timeout without burning cooldown)
+        // Error banner
         AnimatedVisibility(visible = errorMessage != null) {
-            Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.WifiOff, null, tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(16.dp))
+            Surface(shape = RoundedCornerShape(10.dp), color = CrimsonAlertContainer, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.WifiOff, null, tint = Crimson, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = errorMessage ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Text(errorMessage ?: "", style = MaterialTheme.typography.bodySmall, color = Crimson, modifier = Modifier.weight(1f))
                 }
             }
         }
 
-        // Cooldown Alert Banner
+        // Cooldown alert
         if (isLockedByCooldown) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = WrongRed.copy(alpha = 0.15f),
-                border = BorderStroke(1.dp, WrongRed.copy(alpha = 0.6f)),
+                color = CrimsonAlertContainer,
+                border = BorderStroke(1.dp, Crimson.copy(alpha = 0.5f)),
                 modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        "Negotiation Failed — AI Locked for 30m",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = WrongRed
-                    )
+                    Text("Negotiation Failed — AI Locked for 30m", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Crimson)
                     Spacer(Modifier.height(2.dp))
-                    Text(
-                        "Closing and reopening the app will not reset this lockout. Solve an offline Code Challenge instead.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SlateText
-                    )
+                    Text("Solve an offline Code Challenge instead.", style = MaterialTheme.typography.bodySmall, color = Muted)
                 }
             }
         }
 
-        // ── Chat Bubble List ──────────────────────────────────────────────────
+        // ── Chat bubbles ─────────────────────────────────────────────────────
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f).fillMaxWidth().padding(vertical = 8.dp),
@@ -659,57 +500,29 @@ private fun AiNegotiationPane(
         ) {
             items(messages) { msg ->
                 val isUser = msg.role == "user"
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
                     Surface(
-                        shape = RoundedCornerShape(
-                            topStart = 16.dp,
-                            topEnd = 16.dp,
-                            bottomStart = if (isUser) 16.dp else 4.dp,
-                            bottomEnd = if (isUser) 4.dp else 16.dp
-                        ),
-                        color = if (isUser) AccentBlue else CodeBg,
-                        border = if (isUser) null else BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = if (isUser) 16.dp else 4.dp, bottomEnd = if (isUser) 4.dp else 16.dp),
+                        color = if (isUser) AmberContainer else Surf,
+                        border = if (!isUser) BorderStroke(1.dp, SubtleBorder) else null,
                         modifier = Modifier.fillMaxWidth(0.85f)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = if (isUser) "You" else "Gatekeeper AI",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isUser) Color.White.copy(alpha = 0.8f) else AccentPurple
-                            )
+                            Text(if (isUser) "You" else "Gatekeeper AI", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = if (isUser) Amber else Peach)
                             Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = msg.content,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White
-                            )
+                            Text(msg.content, style = MaterialTheme.typography.bodyMedium, color = White)
                         }
                     }
                 }
             }
-
             if (isSending) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = CodeBg,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = AccentPurple)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                        Surface(shape = RoundedCornerShape(12.dp), color = Surf) {
+                            Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = Amber)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Analyzing argument...", style = MaterialTheme.typography.bodySmall, color = SlateText)
+                                Text("Analyzing argument…", style = MaterialTheme.typography.bodySmall, color = Muted)
                             }
                         }
                     }
@@ -717,99 +530,83 @@ private fun AiNegotiationPane(
             }
         }
 
-        // ── Input or Failure Actions ──────────────────────────────────────────
+        // ── Input / Locked actions ───────────────────────────────────────────
         if (isLockedByCooldown) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Button(
-                    onClick = onSwitchToCode,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentTeal),
-                    modifier = Modifier.fillMaxWidth().height(48.dp)
-                ) {
+            Column {
+                Button(onClick = onSwitchToCode, shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Amber, contentColor = ObsidianBackground), modifier = Modifier.fillMaxWidth().height(48.dp)) {
                     Icon(Icons.Default.Code, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text("Switch to Code Challenge (Offline)", fontWeight = FontWeight.Bold)
                 }
-
                 Spacer(Modifier.height(8.dp))
-
-                OutlinedButton(
-                    onClick = onReturnHome,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = SlateText),
-                    modifier = Modifier.fillMaxWidth().height(44.dp)
-                ) {
+                OutlinedButton(onClick = onReturnHome, shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Muted), modifier = Modifier.fillMaxWidth().height(44.dp)) {
                     Text("Go Back to Focus")
                 }
             }
         } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            // Dark textarea + Submit button (0 / 200 style)
+            Column {
                 OutlinedTextField(
-                    value = userMessageInput,
-                    onValueChange = { userMessageInput = it },
-                    placeholder = { Text("Your exact, urgent reason...", color = SlateText) },
+                    value = userInput,
+                    onValueChange = { if (it.length <= 200) userInput = it },
+                    placeholder = { Text("Your exact, urgent reason…", color = Muted) },
                     enabled = !isSending && messagesRemaining > 0 && isOnline,
-                    singleLine = true,
+                    maxLines = 4,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = { sendMessageAction() }),
-                    shape = RoundedCornerShape(16.dp),
+                    keyboardActions = KeyboardActions(onSend = { sendAction() }),
+                    shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AccentPurple,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedBorderColor = Amber,
+                        unfocusedBorderColor = SubtleBorder,
+                        focusedContainerColor = SurfVar,
+                        unfocusedContainerColor = SurfVar,
+                        focusedTextColor = White,
+                        unfocusedTextColor = White,
+                        cursorColor = Amber
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth(),
+                    supportingText = {
+                        Text("${userInput.length} / 200", color = Muted, style = MaterialTheme.typography.labelSmall, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End)
+                    }
                 )
-
-                Spacer(Modifier.width(8.dp))
-
+                Spacer(Modifier.height(8.dp))
                 Button(
-                    onClick = { sendMessageAction() },
-                    enabled = userMessageInput.isNotBlank() && !isSending && messagesRemaining > 0 && isOnline,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentPurple),
-                    modifier = Modifier.size(52.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    onClick = { sendAction() },
+                    enabled = userInput.isNotBlank() && !isSending && messagesRemaining > 0 && isOnline,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Peach, contentColor = ObsidianBackground)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
+                    if (isSending) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = ObsidianBackground, strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Analyzing…", fontWeight = FontWeight.Bold)
+                    } else {
+                        Text("Submit", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.ExtraBold)
+                    }
                 }
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            // Switch to Code Challenge shortcut
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "No excuses? Try the coding challenge instead.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = SlateText,
-                    fontSize = 11.sp
-                )
-                Text(
-                    text = "Code Challenge",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = AccentTeal,
-                    modifier = Modifier.clickable { onSwitchToCode() }
-                )
+                Spacer(Modifier.height(6.dp))
+                // Tip row
+                Surface(shape = RoundedCornerShape(10.dp), color = SurfVar, modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Lightbulb, null, tint = Amber, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Tip: Only urgent or work-critical reasons will be accepted.", style = MaterialTheme.typography.bodySmall, color = Muted)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("No excuses? Try the coding challenge.", style = MaterialTheme.typography.bodySmall, color = Muted, fontSize = 11.sp)
+                    Text("Code Challenge →", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Amber, modifier = Modifier.clickable { onSwitchToCode() })
+                }
             }
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-//  ChallengePane – interactive challenge view
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/** Tracks interactive submission state inside a challenge. */
+// ══════════════════════════════════════════════════════════════════════════════
+//  Step 2b — Algo Ransom (DSA Code Challenge)
+// ══════════════════════════════════════════════════════════════════════════════
 private enum class SubmitState { IDLE, CORRECT, WRONG }
 
 @Composable
@@ -821,140 +618,72 @@ private fun ChallengePane(
     onSwitchToAi: () -> Unit,
     canSwitchToAi: Boolean,
 ) {
-    // Per-challenge state – reset whenever a new challenge arrives
     var selectedOption by remember(challenge.id) { mutableStateOf<String?>(null) }
     var selectedLineIndex by remember(challenge.id) { mutableIntStateOf(-1) }
     val parsonsOrder = remember(challenge.id) { mutableStateListOf<Int>() }
     var submitState by remember(challenge.id) { mutableStateOf(SubmitState.IDLE) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize().background(Bg).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // ── Header ─────────────────────────────────────────────────────────────
+        // ── Header ───────────────────────────────────────────────────────────
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = when (challenge.difficulty) {
-                    1 -> Color(0xFF1D4ED8).copy(alpha = 0.4f)
-                    2 -> Color(0xFF7C3AED).copy(alpha = 0.4f)
-                    3 -> Color(0xFFB45309).copy(alpha = 0.4f)
-                    else -> Color(0xFFB91C1C).copy(alpha = 0.4f)
-                },
-            ) {
-                Text(
-                    "TIER ${challenge.difficulty} · ${challenge.type.name.replace('_', ' ')}",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                )
+            FocusCatMascot(mood = CatMood.EVALUATING, modifier = Modifier.size(70.dp, 60.dp))
+            Spacer(Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Algo Ransom", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = White)
+                Text("Solve the puzzle to prove your focus.", style = MaterialTheme.typography.bodySmall, color = Muted)
             }
-            Spacer(Modifier.weight(1f))
-
+            // Difficulty badge
+            Surface(shape = RoundedCornerShape(8.dp), color = AmberContainer) {
+                Text("TIER ${challenge.difficulty}", color = Amber, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
+            }
             if (canSwitchToAi) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = AccentPurple.copy(alpha = 0.2f),
-                    modifier = Modifier.clickable { onSwitchToAi() }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Psychology, null, tint = AccentPurple, modifier = Modifier.size(14.dp))
+                Spacer(Modifier.width(6.dp))
+                Surface(shape = RoundedCornerShape(8.dp), color = SurfVar, modifier = Modifier.clickable { onSwitchToAi() }) {
+                    Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Psychology, null, tint = Peach, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Convince AI", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                        Text("AI", color = White, style = MaterialTheme.typography.labelSmall)
                     }
                 }
-                Spacer(Modifier.width(4.dp))
             }
-
             IconButton(onClick = onReturnHome) {
-                Icon(Icons.Default.Home, "Return home", tint = SlateText)
+                Icon(Icons.Default.Close, "Return home", tint = Muted)
             }
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(14.dp))
 
-        Text(
-            challenge.topic,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-        )
-
+        Text(challenge.topic, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = White)
         Spacer(Modifier.height(6.dp))
-
-        Text(
-            challenge.prompt,
-            style = MaterialTheme.typography.bodyMedium,
-            color = SlateText,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
+        Text(challenge.prompt, style = MaterialTheme.typography.bodyMedium, color = Muted, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(16.dp))
 
-        // ── Challenge body – rendered per type ────────────────────────────────
         when (challenge.type) {
             ChallengeType.OUTPUT_PREDICTION, ChallengeType.COMPLEXITY -> {
                 if (challenge.codeLines.isNotEmpty()) {
-                    CodeBlock(lines = challenge.codeLines, numbered = false)
+                    AmberCodeBlock(lines = challenge.codeLines, numbered = false)
                     Spacer(Modifier.height(16.dp))
                 }
-                OptionCards(
-                    options = challenge.options,
-                    selectedOption = selectedOption,
-                    submitState = submitState,
-                    correctAnswer = challenge.correctAnswer,
-                    onSelect = { if (submitState == SubmitState.IDLE) selectedOption = it },
-                )
+                AmberOptionCards(options = challenge.options, selectedOption = selectedOption, submitState = submitState, correctAnswer = challenge.correctAnswer, onSelect = { if (submitState == SubmitState.IDLE) selectedOption = it })
             }
-
             ChallengeType.FIND_ERROR -> {
-                FindErrorBlock(
-                    lines = challenge.codeLines,
-                    selectedIndex = selectedLineIndex,
-                    submitState = submitState,
-                    correctIndex = challenge.correctAnswer.trim().toIntOrNull() ?: -1,
-                    onSelectLine = { if (submitState == SubmitState.IDLE) selectedLineIndex = it },
-                )
+                AmberFindErrorBlock(lines = challenge.codeLines, selectedIndex = selectedLineIndex, submitState = submitState, correctIndex = challenge.correctAnswer.trim().toIntOrNull() ?: -1, onSelectLine = { if (submitState == SubmitState.IDLE) selectedLineIndex = it })
             }
-
             ChallengeType.PARSONS_ORDER -> {
-                ParsonsBlock(
-                    lines = challenge.codeLines,
-                    tappedOrder = parsonsOrder,
-                    submitState = submitState,
-                    onTapLine = { idx ->
-                        if ((submitState == SubmitState.IDLE) && (idx !in parsonsOrder)) {
-                            parsonsOrder.add(idx)
-                        }
-                    },
-                    onReset = { parsonsOrder.clear() },
-                )
+                AmberParsonsBlock(lines = challenge.codeLines, tappedOrder = parsonsOrder, submitState = submitState, onTapLine = { idx -> if (submitState == SubmitState.IDLE && idx !in parsonsOrder) parsonsOrder.add(idx) }, onReset = { parsonsOrder.clear() })
             }
-
-            else -> {
-                Text("Unsupported challenge type.", color = SlateText)
-            }
+            else -> Text("Unsupported challenge type.", color = Muted)
         }
 
-        // ── Explanation after submission ───────────────────────────────────────
         AnimatedVisibility(visible = submitState != SubmitState.IDLE) {
-            ExplanationCard(
-                isCorrect = submitState == SubmitState.CORRECT,
-                explanation = challenge.explanation,
-            )
+            ExplanationCard(isCorrect = submitState == SubmitState.CORRECT, explanation = challenge.explanation)
         }
 
         Spacer(Modifier.height(20.dp))
 
-        // ── Submit button ──────────────────────────────────────────────────────
         val canSubmit = when (challenge.type) {
             ChallengeType.OUTPUT_PREDICTION, ChallengeType.COMPLEXITY -> selectedOption != null
             ChallengeType.FIND_ERROR -> selectedLineIndex >= 0
@@ -963,48 +692,37 @@ private fun ChallengePane(
         }
 
         Button(
-            enabled = (canSubmit && (submitState == SubmitState.IDLE)),
+            enabled = canSubmit && submitState == SubmitState.IDLE,
             onClick = {
-                val userAnswer = when (challenge.type) {
+                val answer = when (challenge.type) {
                     ChallengeType.OUTPUT_PREDICTION, ChallengeType.COMPLEXITY -> selectedOption ?: ""
                     ChallengeType.FIND_ERROR -> selectedLineIndex.toString()
                     ChallengeType.PARSONS_ORDER -> parsonsOrder.joinToString(",")
                     else -> ""
                 }
-                submitState = if (userAnswer.trim() == challenge.correctAnswer.trim()) SubmitState.CORRECT else SubmitState.WRONG
+                submitState = if (answer.trim() == challenge.correctAnswer.trim()) SubmitState.CORRECT else SubmitState.WRONG
             },
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue, contentColor = Color.White),
-            modifier = Modifier.fillMaxWidth().height(54.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Peach, contentColor = ObsidianBackground),
+            modifier = Modifier.fillMaxWidth().height(54.dp)
         ) {
             Icon(Icons.Default.Check, null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(8.dp))
             Text("Submit Answer", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
 
-        // ── Outcome action buttons ─────────────────────────────────────────────
         AnimatedVisibility(visible = submitState == SubmitState.CORRECT) {
             Column {
                 Spacer(Modifier.height(10.dp))
-                Button(
-                    onClick = onCorrect,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CorrectGreen, contentColor = Color.White),
-                    modifier = Modifier.fillMaxWidth().height(54.dp),
-                ) {
+                Button(onClick = onCorrect, shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = Amber, contentColor = ObsidianBackground), modifier = Modifier.fillMaxWidth().height(54.dp)) {
                     Text("Unlock 5-Min Pass 🎉", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 }
             }
         }
-
         AnimatedVisibility(visible = submitState == SubmitState.WRONG) {
             Column {
                 Spacer(Modifier.height(10.dp))
-                FilledTonalButton(
-                    onClick = onWrong,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth().height(54.dp),
-                ) {
+                FilledTonalButton(onClick = onWrong, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().height(54.dp), colors = ButtonDefaults.filledTonalButtonColors(containerColor = SurfVar, contentColor = White)) {
                     Icon(Icons.Default.Refresh, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text("Try Next Challenge", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -1012,154 +730,87 @@ private fun ChallengePane(
             }
         }
 
+        // Bottom progress
         Spacer(Modifier.height(16.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text("1 / 1", style = MaterialTheme.typography.labelSmall, color = Muted)
+            Spacer(Modifier.width(8.dp))
+            LinearProgressIndicator(progress = { 1f }, modifier = Modifier.weight(1f).clip(RoundedCornerShape(4.dp)), color = Amber, trackColor = SurfVar)
+        }
 
-        OutlinedButton(
-            onClick = onReturnHome,
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = SlateText),
-            modifier = Modifier.fillMaxWidth().height(44.dp),
-        ) {
+        Spacer(Modifier.height(10.dp))
+        OutlinedButton(onClick = onReturnHome, shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Muted), modifier = Modifier.fillMaxWidth().height(44.dp), border = BorderStroke(1.dp, SubtleBorder)) {
             Text("Go Back / Stay Focused", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-//  Sub-composables
-// ═══════════════════════════════════════════════════════════════════════════════
-
+// ── Code block (amber-themed) ─────────────────────────────────────────────────
 @Composable
-private fun CodeBlock(lines: List<String>, numbered: Boolean) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = CodeBg,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(12.dp)
-                .horizontalScroll(rememberScrollState()),
-        ) {
+private fun AmberCodeBlock(lines: List<String>, numbered: Boolean) {
+    Surface(shape = RoundedCornerShape(12.dp), color = CodeBg, border = BorderStroke(1.dp, SubtleBorder), modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp).horizontalScroll(rememberScrollState())) {
             lines.forEachIndexed { idx, line ->
                 Row {
-                    if (numbered) {
-                        Text(
-                            text = "$idx  ",
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 13.sp,
-                            color = SlateText,
-                        )
-                    }
-                    Text(
-                        text = line,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
-                        color = Color(0xFFE2E8F0),
-                    )
+                    if (numbered) Text("$idx  ", fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = Muted)
+                    Text(line, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = Color(0xFFE8D5BC))
                 }
             }
         }
     }
 }
 
+// ── Option cards (amber-themed) ───────────────────────────────────────────────
 @Composable
-private fun OptionCards(
-    options: List<String>,
-    selectedOption: String?,
-    submitState: SubmitState,
-    correctAnswer: String,
-    onSelect: (String) -> Unit,
-) {
+private fun AmberOptionCards(options: List<String>, selectedOption: String?, submitState: SubmitState, correctAnswer: String, onSelect: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         options.forEach { opt ->
             val isSelected = opt == selectedOption
             val borderColor by animateColorAsState(
                 targetValue = when {
-                    submitState == SubmitState.IDLE && isSelected -> AccentBlue
-                    submitState != SubmitState.IDLE && opt == correctAnswer -> CorrectGreen
-                    submitState == SubmitState.WRONG && isSelected -> WrongRed
-                    else -> Color.White.copy(alpha = 0.1f)
-                },
-                label = "OptBorder",
+                    submitState == SubmitState.IDLE && isSelected -> Amber
+                    submitState != SubmitState.IDLE && opt == correctAnswer -> Amber
+                    submitState == SubmitState.WRONG && isSelected -> Crimson
+                    else -> SubtleBorder
+                }, label = "OptBorder"
             )
             val bgColor by animateColorAsState(
                 targetValue = when {
-                    submitState == SubmitState.IDLE && isSelected -> AccentBlue.copy(alpha = 0.18f)
-                    submitState != SubmitState.IDLE && opt == correctAnswer -> CorrectGreen.copy(alpha = 0.15f)
-                    submitState == SubmitState.WRONG && isSelected -> WrongRed.copy(alpha = 0.15f)
-                    else -> Color.White.copy(alpha = 0.04f)
-                },
-                label = "OptBg",
+                    submitState == SubmitState.IDLE && isSelected -> AmberContainer
+                    submitState != SubmitState.IDLE && opt == correctAnswer -> AmberContainer.copy(alpha = 0.6f)
+                    submitState == SubmitState.WRONG && isSelected -> CrimsonAlertContainer
+                    else -> SurfVar
+                }, label = "OptBg"
             )
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = bgColor,
                 border = BorderStroke(1.dp, borderColor),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onSelect(opt) },
+                modifier = Modifier.fillMaxWidth().clickable { onSelect(opt) }
             ) {
-                Text(
-                    opt,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                )
+                Text(opt, style = MaterialTheme.typography.bodyMedium, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = White, modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp))
             }
         }
     }
 }
 
 @Composable
-private fun FindErrorBlock(
-    lines: List<String>,
-    selectedIndex: Int,
-    submitState: SubmitState,
-    correctIndex: Int,
-    onSelectLine: (Int) -> Unit,
-) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = CodeBg,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+private fun AmberFindErrorBlock(lines: List<String>, selectedIndex: Int, submitState: SubmitState, correctIndex: Int, onSelectLine: (Int) -> Unit) {
+    Surface(shape = RoundedCornerShape(12.dp), color = CodeBg, border = BorderStroke(1.dp, SubtleBorder), modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             lines.forEachIndexed { idx, line ->
                 val isSelected = idx == selectedIndex
                 val lineColor by animateColorAsState(
                     targetValue = when {
-                        submitState != SubmitState.IDLE && idx == correctIndex -> CorrectGreen.copy(alpha = 0.25f)
-                        submitState == SubmitState.WRONG && isSelected -> WrongRed.copy(alpha = 0.25f)
-                        isSelected -> AccentBlue.copy(alpha = 0.25f)
+                        submitState != SubmitState.IDLE && idx == correctIndex -> AmberContainer
+                        submitState == SubmitState.WRONG && isSelected -> CrimsonAlertContainer
+                        isSelected -> AmberContainer.copy(alpha = 0.6f)
                         else -> Color.Transparent
-                    },
-                    label = "LineHl_$idx",
+                    }, label = "LineHl_$idx"
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(lineColor)
-                        .clickable { onSelectLine(idx) }
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "$idx",
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        color = SlateText,
-                        modifier = Modifier.width(28.dp),
-                    )
-                    Text(
-                        line,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
-                        color = Color(0xFFE2E8F0),
-                    )
+                Row(modifier = Modifier.fillMaxWidth().background(lineColor).clickable { onSelectLine(idx) }.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("$idx", fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = Muted, modifier = Modifier.width(28.dp))
+                    Text(line, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = Color(0xFFE8D5BC))
                 }
             }
         }
@@ -1167,87 +818,30 @@ private fun FindErrorBlock(
 }
 
 @Composable
-private fun ParsonsBlock(
-    lines: List<String>,
-    tappedOrder: List<Int>,
-    submitState: SubmitState,
-    onTapLine: (Int) -> Unit,
-    onReset: () -> Unit,
-) {
+private fun AmberParsonsBlock(lines: List<String>, tappedOrder: List<Int>, submitState: SubmitState, onTapLine: (Int) -> Unit, onReset: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                text = if (tappedOrder.isEmpty()) "Tap lines below to build order…" else "Order: ${tappedOrder.joinToString(" → ") { "[$it]" }}",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (tappedOrder.isEmpty()) SlateText else AccentTeal,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f),
-            )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(if (tappedOrder.isEmpty()) "Tap lines below to build order…" else "Order: ${tappedOrder.joinToString(" → ") { "[$it]" }}", style = MaterialTheme.typography.bodySmall, color = if (tappedOrder.isEmpty()) Muted else Amber, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
             if (tappedOrder.isNotEmpty() && submitState == SubmitState.IDLE) {
                 IconButton(onClick = onReset, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Refresh, "Reset order", tint = SlateText, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Refresh, "Reset", tint = Muted, modifier = Modifier.size(18.dp))
                 }
             }
         }
-
         lines.forEachIndexed { idx, line ->
             val posInOrder = tappedOrder.indexOf(idx)
             val alreadyTapped = posInOrder >= 0
-
-            val borderColor by animateColorAsState(
-                targetValue = when {
-                    submitState != SubmitState.IDLE -> if (alreadyTapped) CorrectGreen else Color.White.copy(alpha = 0.1f)
-                    alreadyTapped -> AccentTeal
-                    else -> Color.White.copy(alpha = 0.12f)
-                },
-                label = "PBorder_$idx",
-            )
-            val bgColor by animateColorAsState(
-                targetValue = when {
-                    submitState != SubmitState.IDLE && alreadyTapped -> CorrectGreen.copy(alpha = 0.1f)
-                    alreadyTapped -> AccentTeal.copy(alpha = 0.15f)
-                    else -> Color.White.copy(alpha = 0.04f)
-                },
-                label = "PBg_$idx",
-            )
-
-            Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = bgColor,
-                border = BorderStroke(1.dp, borderColor),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = !alreadyTapped && submitState == SubmitState.IDLE) { onTapLine(idx) },
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = if (alreadyTapped) AccentTeal else Color.White.copy(alpha = 0.08f),
-                        modifier = Modifier.size(26.dp),
-                    ) {
+            val borderColor by animateColorAsState(targetValue = when { alreadyTapped -> Amber; else -> SubtleBorder }, label = "PBorder_$idx")
+            val bgColor by animateColorAsState(targetValue = when { alreadyTapped -> AmberContainer; else -> SurfVar }, label = "PBg_$idx")
+            Surface(shape = RoundedCornerShape(10.dp), color = bgColor, border = BorderStroke(1.dp, borderColor), modifier = Modifier.fillMaxWidth().clickable(enabled = !alreadyTapped && submitState == SubmitState.IDLE) { onTapLine(idx) }) {
+                Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(shape = CircleShape, color = if (alreadyTapped) Amber else SurfVar, modifier = Modifier.size(26.dp)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Text(
-                                if (alreadyTapped) (posInOrder + 1).toString() else idx.toString(),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (alreadyTapped) Color.White else SlateText,
-                            )
+                            Text(if (alreadyTapped) (posInOrder + 1).toString() else idx.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (alreadyTapped) ObsidianBackground else Muted)
                         }
                     }
                     Spacer(Modifier.width(10.dp))
-                    Text(
-                        line,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
-                        color = Color(0xFFE2E8F0),
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    )
+                    Text(line, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = Color(0xFFE8D5BC), modifier = Modifier.horizontalScroll(rememberScrollState()))
                 }
             }
         }
@@ -1256,28 +850,277 @@ private fun ParsonsBlock(
 
 @Composable
 private fun ExplanationCard(isCorrect: Boolean, explanation: String) {
-    val border = if (isCorrect) CorrectGreen else WrongRed
-    val bg = border.copy(alpha = 0.12f)
-
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = bg),
-        border = BorderStroke(1.dp, border),
-        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-    ) {
+    val border = if (isCorrect) Amber else Crimson
+    val bg = if (isCorrect) AmberContainer else CrimsonAlertContainer
+    Card(shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = bg), border = BorderStroke(1.dp, border), modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
         Column(modifier = Modifier.padding(14.dp)) {
-            Text(
-                if (isCorrect) "✓ Correct!" else "✗ Not quite…",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = border,
-            )
+            Text(if (isCorrect) "✓ Correct!" else "✗ Not quite…", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = border)
             Spacer(Modifier.height(6.dp))
-            Text(
-                explanation,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFCBD5E1),
+            Text(explanation, style = MaterialTheme.typography.bodySmall, color = Muted)
+        }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  Step 2c — Git Proof (GitHub Commit Bank Pane)
+// ══════════════════════════════════════════════════════════════════════════════
+private sealed class BankSyncState {
+    object Idle : BankSyncState()
+    object Syncing : BankSyncState()
+    data class Done(val newCommits: Int, val bankedMins: Int, val todayTotal: Int) : BankSyncState()
+    data class Failed(val reason: String) : BankSyncState()
+}
+
+@Composable
+private fun GitHubBankPane(
+    blockedPackage: String,
+    isOnline: Boolean,
+    onReturnHome: () -> Unit,
+    onUnlockGranted: (minutes: Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val ghRepo = remember { GitHubGateRepository.getInstance(context) }
+    val scope = rememberCoroutineScope()
+
+    val bankState by ghRepo.bankStateFlow.collectAsState(initial = com.example.myapplication.data.GitHubBankState())
+    var syncState by remember { mutableStateOf<BankSyncState>(BankSyncState.Idle) }
+    var spendError by remember { mutableStateOf<String?>(null) }
+
+    val username = bankState.username
+    val isConfigured = username.isNotBlank() && bankState.pat.isNotBlank()
+    val bankedMins = bankState.bankedMinutesAvailable
+
+    LaunchedEffect(isOnline, isConfigured) {
+        if (isOnline && isConfigured && syncState is BankSyncState.Idle) {
+            syncState = BankSyncState.Syncing
+            val result = ghRepo.syncCommitsFromGitHub()
+            syncState = result.fold(
+                onSuccess = { r -> BankSyncState.Done(r.newCommitsEarned, r.bankedMinutesAvailable, r.todayTotalCommits) },
+                onFailure = { BankSyncState.Failed(it.message ?: "Sync failed") }
             )
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().background(Bg).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Surface(shape = RoundedCornerShape(10.dp), color = AmberContainer, border = BorderStroke(1.dp, Amber.copy(alpha = 0.4f))) {
+                Row(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Commit, null, tint = Amber, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("GITHUB COMMIT BANK", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = White, letterSpacing = 1.sp)
+                }
+            }
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onReturnHome) { Icon(Icons.Default.Close, "Home", tint = Muted) }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // Not-configured / offline banners
+        if (!isConfigured) {
+            Banner(text = "GitHub credentials not configured. Set them up in Settings.", isError = true)
+            Spacer(Modifier.height(12.dp))
+        } else if (!isOnline) {
+            Banner(text = "Offline — Sync disabled. You can still spend already-banked minutes below.", isError = false)
+            Spacer(Modifier.height(12.dp))
+        }
+
+        // Sync result
+        if (isConfigured) {
+            AnimatedVisibility(visible = syncState is BankSyncState.Done || syncState is BankSyncState.Failed) {
+                val isDone = syncState is BankSyncState.Done
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isDone) AmberContainer else CrimsonAlertContainer,
+                    border = BorderStroke(1.dp, if (isDone) Amber.copy(alpha = 0.5f) else Crimson.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    when (val s = syncState) {
+                        is BankSyncState.Done -> Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Check, null, tint = Amber, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Synced @$username · ${s.todayTotal} commits today${if (s.newCommits > 0) " · +${s.newCommits * GitHubGateRepository.MINUTES_PER_COMMIT} mins earned" else ""}", style = MaterialTheme.typography.bodySmall, color = Amber, fontWeight = FontWeight.SemiBold)
+                        }
+                        is BankSyncState.Failed -> Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.WifiOff, null, tint = Crimson, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Sync failed: ${s.reason}", style = MaterialTheme.typography.bodySmall, color = Crimson)
+                        }
+                        else -> {}
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+        }
+
+        // Stats card
+        Surface(shape = RoundedCornerShape(16.dp), color = Surf, border = BorderStroke(1.dp, SubtleBorder), modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Today's Commit Activity", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Muted, letterSpacing = 0.5.sp)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    StatBox("Today's Commits", if (syncState is BankSyncState.Done) "${(syncState as BankSyncState.Done).todayTotal}" else "${bankState.redeemedCommitsToday}", "commits", White)
+                    StatBox("Available Bank", "$bankedMins", "mins", Amber)
+                }
+                Text("1 commit = +${GitHubGateRepository.MINUTES_PER_COMMIT} mins · Bank resets at midnight", style = MaterialTheme.typography.bodySmall, color = Muted, fontSize = 11.sp)
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Sync button
+        if (isConfigured) {
+            Button(
+                onClick = {
+                    if (!isOnline) return@Button
+                    syncState = BankSyncState.Syncing
+                    scope.launch {
+                        val r = ghRepo.syncCommitsFromGitHub()
+                        syncState = r.fold(onSuccess = { s -> BankSyncState.Done(s.newCommitsEarned, s.bankedMinutesAvailable, s.todayTotalCommits) }, onFailure = { BankSyncState.Failed(it.message ?: "Sync failed") })
+                    }
+                },
+                enabled = isOnline && syncState !is BankSyncState.Syncing,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = SurfVar, contentColor = White)
+            ) {
+                if (syncState is BankSyncState.Syncing) {
+                    CircularProgressIndicator(color = Amber, strokeWidth = 2.dp, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Syncing Commits…", fontWeight = FontWeight.SemiBold)
+                } else {
+                    Icon(Icons.Default.Sync, null, modifier = Modifier.size(16.dp), tint = if (isOnline) Amber else Muted)
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (isOnline) "Sync Commits" else "Offline", fontWeight = FontWeight.SemiBold)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+        }
+
+        // Spend controls
+        spendError?.let { err ->
+            Text(err, style = MaterialTheme.typography.bodySmall, color = Crimson, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(6.dp))
+        }
+
+        if (!isConfigured) {
+            Text("Configure GitHub credentials in Settings to earn screen-time.", style = MaterialTheme.typography.bodyMedium, color = Muted, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+        } else if (bankedMins < GitHubGateRepository.MINUTES_PER_COMMIT) {
+            Surface(shape = RoundedCornerShape(12.dp), color = SurfVar, border = BorderStroke(1.dp, SubtleBorder), modifier = Modifier.fillMaxWidth()) {
+                Text("Push a commit (+${GitHubGateRepository.MINUTES_PER_COMMIT} mins) and tap Sync.", style = MaterialTheme.typography.bodyMedium, color = Muted, textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
+            }
+        } else {
+            Text("SPEND BANKED SCREEN-TIME", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Muted, letterSpacing = 1.sp)
+            Spacer(Modifier.height(8.dp))
+            if (bankedMins >= 15) {
+                AmberSpendButton("Unlock 15 Mins") {
+                    scope.launch {
+                        val ok = ghRepo.spendBankedMinutes(blockedPackage, 15)
+                        if (ok) onUnlockGranted(15) else spendError = "Insufficient balance — sync to earn more."
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+            if (bankedMins >= 30) {
+                AmberSpendButton("Unlock 30 Mins") {
+                    scope.launch {
+                        val ok = ghRepo.spendBankedMinutes(blockedPackage, 30)
+                        if (ok) onUnlockGranted(30) else spendError = "Insufficient balance."
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+            if (bankedMins >= 60) {
+                AmberSpendButton("Unlock 60 Mins") {
+                    scope.launch {
+                        val ok = ghRepo.spendBankedMinutes(blockedPackage, 60)
+                        if (ok) onUnlockGranted(60) else spendError = "Insufficient balance."
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        OutlinedButton(onClick = onReturnHome, shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Muted), modifier = Modifier.fillMaxWidth().height(44.dp), border = BorderStroke(1.dp, SubtleBorder)) {
+            Text("Go Back / Stay Focused")
+        }
+    }
+}
+
+@Composable
+private fun AmberSpendButton(label: String, onClick: () -> Unit) {
+    Button(onClick = onClick, shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Amber, contentColor = ObsidianBackground), modifier = Modifier.fillMaxWidth().height(52.dp)) {
+        Icon(Icons.Default.LockOpen, null, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun StatBox(label: String, value: String, unit: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = Muted, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(4.dp))
+        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = color)
+        Text(unit, style = MaterialTheme.typography.labelSmall, color = Muted)
+    }
+}
+
+@Composable
+private fun Banner(text: String, isError: Boolean) {
+    Surface(shape = RoundedCornerShape(12.dp), color = if (isError) CrimsonAlertContainer else SurfVar, border = BorderStroke(1.dp, if (isError) Crimson.copy(alpha = 0.5f) else SubtleBorder), modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(if (isError) Icons.Default.Warning else Icons.Default.WifiOff, null, tint = if (isError) Crimson else Muted, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(10.dp))
+            Text(text, style = MaterialTheme.typography.bodySmall, color = if (isError) Crimson else Muted)
+        }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  Step 3 — Access Granted! Celebration Screen
+// ══════════════════════════════════════════════════════════════════════════════
+@Composable
+private fun AccessGrantedPane(grantedMinutes: Int, onContinue: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().background(Bg).verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 48.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        FocusCatMascot(mood = CatMood.HAPPY_WAVE, modifier = Modifier.size(180.dp, 160.dp))
+
+        Spacer(Modifier.height(24.dp))
+
+        // Amber checkmark badge
+        Box(
+            modifier = Modifier.size(72.dp).clip(CircleShape).background(AmberContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Check, null, tint = Amber, modifier = Modifier.size(40.dp))
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Text("Access Granted!", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.ExtraBold, color = White, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(10.dp))
+        Text(
+            "You've earned $grantedMinutes minutes of focused access.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Muted,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(36.dp))
+
+        Button(
+            onClick = onContinue,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Peach, contentColor = ObsidianBackground)
+        ) {
+            Text("Continue", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
         }
     }
 }

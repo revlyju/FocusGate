@@ -54,7 +54,7 @@ fun ServiceStatusCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (allActive) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                com.example.myapplication.ui.theme.AmberContainer
             } else {
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
             }
@@ -146,7 +146,7 @@ private fun PermissionStatusRow(
     actionLabel: String,
     onAction: () -> Unit
 ) {
-    val activeColor = Color(0xFF2E7D32) // Forest green
+    val activeColor = com.example.myapplication.ui.theme.AmberPrimary
     val disabledColor = MaterialTheme.colorScheme.error
 
     Surface(

@@ -43,7 +43,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -115,7 +114,7 @@ fun AiSettingsCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            containerColor = com.example.myapplication.ui.theme.CharcoalSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -135,13 +134,13 @@ fun AiSettingsCard(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.tertiaryContainer),
+                            .background(com.example.myapplication.ui.theme.AmberContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Psychology,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                            tint = com.example.myapplication.ui.theme.AmberPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -169,7 +168,7 @@ fun AiSettingsCard(
             Surface(
                 shape = RoundedCornerShape(10.dp),
                 color = when (keyStatus) {
-                    is KeyStatus.VerifiedActive -> Color(0xFF2E7D32).copy(alpha = 0.15f)
+                    is KeyStatus.VerifiedActive -> com.example.myapplication.ui.theme.AmberContainer
                     is KeyStatus.Invalid -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
                     is KeyStatus.Verifying -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                     KeyStatus.NotConfigured -> MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
@@ -182,9 +181,9 @@ fun AiSettingsCard(
                 ) {
                     when (keyStatus) {
                         is KeyStatus.VerifiedActive -> {
-                            Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF2E7D32), modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.CheckCircle, null, tint = com.example.myapplication.ui.theme.AmberPrimary, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Verified & Active (Groq Llama 3.3)", color = Color(0xFF2E7D32), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                            Text("Verified & Active (Groq Llama 3.3)", color = com.example.myapplication.ui.theme.AmberPrimary, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                         }
                         is KeyStatus.Invalid -> {
                             Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
@@ -232,8 +231,13 @@ fun AiSettingsCard(
                 },
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                    focusedBorderColor = com.example.myapplication.ui.theme.AmberPrimary,
+                    unfocusedBorderColor = com.example.myapplication.ui.theme.SubtleBorder,
+                    focusedContainerColor = com.example.myapplication.ui.theme.CharcoalSurfaceVar,
+                    unfocusedContainerColor = com.example.myapplication.ui.theme.CharcoalSurfaceVar,
+                    focusedTextColor = com.example.myapplication.ui.theme.WarmWhite,
+                    unfocusedTextColor = com.example.myapplication.ui.theme.WarmWhite,
+                    cursorColor = com.example.myapplication.ui.theme.AmberPrimary
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -244,7 +248,7 @@ fun AiSettingsCard(
             Text(
                 text = "Get a free key at console.groq.com",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
+                color = com.example.myapplication.ui.theme.AmberPrimary,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(start = 4.dp)
             )
@@ -257,8 +261,8 @@ fun AiSettingsCard(
                 enabled = keyStatus != KeyStatus.Verifying && apiKeyInput.isNotBlank(),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = com.example.myapplication.ui.theme.AmberPrimary,
+                    contentColor = com.example.myapplication.ui.theme.ObsidianBackground
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
